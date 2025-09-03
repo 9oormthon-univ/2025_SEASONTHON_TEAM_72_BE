@@ -33,9 +33,6 @@ public class User {
     @OneToMany(mappedBy = "manager")
     private List<Settlement> managedSettlements = new ArrayList<>();
 
-    // 사용자가 참여하는 정산 목록 (User N : M Settlement)
-    @ManyToMany(mappedBy = "participants")
-    private List<Settlement> settlements = new ArrayList<>();
 
     // 사용자의 계좌 목록 (User 1 : N Account)
     @OneToMany(mappedBy = "user")
