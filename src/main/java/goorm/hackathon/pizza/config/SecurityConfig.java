@@ -38,12 +38,12 @@ public class SecurityConfig {
                 }))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
-                // 401일 때 Basic 팝업 뜨지 않게(WWW-Authenticate 헤더 제거)
+                // 401 시 브라우저 Basic 팝업 방지
                 .exceptionHandling(e -> e.authenticationEntryPoint((req, res, ex) -> res.sendError(401)))
 
-                // 인가
+                // 인가 규칙
                 .authorizeHttpRequests(auth -> auth
-
+                        // Swagger / 정적
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -51,12 +51,18 @@ public class SecurityConfig {
                                 "/webjars/**"
                         ).permitAll()
 
-                        // 헬스체크/에러 등
+                        // 헬스체크/에러
                         .requestMatchers("/actuator/**", "/error").permitAll()
 
-                        // Auth API 허용
+                        // Auth API
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/signup", "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+
+                        // 초대코드 조회는 비로그인 허용 (대소문자 입력 허용은 컨트롤러/서비스에서 처리)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/invites/**").permitAll()
+
+                        // 초대코드 생성/재발급은 로그인 필요
+                        .requestMatchers(HttpMethod.POST, "/api/v1/settlements/*/invites").authenticated()
 
                         // 보호 API
                         .requestMatchers("/api/v1/users/me").authenticated()
@@ -65,7 +71,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 );
 
-        // JWT 필터 체인 앞에 추가
+        // JWT 필터
         http.addFilterBefore(jwtFilter, BasicAuthenticationFilter.class);
 
         return http.build();

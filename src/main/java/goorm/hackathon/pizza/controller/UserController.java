@@ -1,7 +1,7 @@
 package goorm.hackathon.pizza.controller;
 
 import goorm.hackathon.pizza.dto.user.UserMeResponse;
-import goorm.hackathon.pizza.entity.UserEntity;
+import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.service.UserService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +20,8 @@ public class UserController {
     // GET /api/v1/users/me
     // JWT 인증 필터를 거쳐 SecurityContext에 저장된 UserEntity가 들어옴
     @GetMapping("/me")
-    public UserMeResponse me(@AuthenticationPrincipal UserEntity user) {
-        // UserEntity → UserMeResponse DTO 변환
+    public UserMeResponse me(@AuthenticationPrincipal User user) {
+        // User → UserMeResponse DTO 변환
         return userService.toDto(user);
     }
 }

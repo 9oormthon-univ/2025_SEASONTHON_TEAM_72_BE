@@ -1,6 +1,6 @@
 package goorm.hackathon.pizza.jwt;
 
-import goorm.hackathon.pizza.entity.UserEntity;
+import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.repository.UserRepository;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = tokenProvider.getUserId(token);
 
                 // DB에서 사용자 조회
-                UserEntity user = userRepository.findById(userId).orElse(null);
+                User user = userRepository.findById(userId).orElse(null);
                 if (user != null) {
                     // DB role 값이 "USER"면 "ROLE_USER"로 변환
                     String role = user.getRole();
@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     ? List.of(new SimpleGrantedAuthority(springRole))
                                     : Collections.emptyList();
 
-                    // principal 에 UserEntity 그대로 넣기 > @AuthenticationPrincipal 로 접근 가능
+                    // principal 에 User 그대로 넣기 > @AuthenticationPrincipal 로 접근 가능
                     var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }

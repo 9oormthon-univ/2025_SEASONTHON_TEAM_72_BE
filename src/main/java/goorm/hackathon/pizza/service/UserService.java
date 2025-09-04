@@ -2,7 +2,7 @@
 package goorm.hackathon.pizza.service;
 
 import goorm.hackathon.pizza.dto.user.UserMeResponse;
-import goorm.hackathon.pizza.entity.UserEntity;
+import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -22,7 +22,7 @@ public class UserService {
         // principal이 userId(Long)을 제공하는 타입
         if (principal instanceof UserIdSupplier p) {
             Long userId = p.userId();
-            UserEntity u = userRepository.findById(userId)
+            User u = userRepository.findById(userId)
                     .orElseThrow(() -> new IllegalStateException("User not found: " + userId));
             return toDto(u);
         }
@@ -30,14 +30,14 @@ public class UserService {
         // principal이 UserDetails → email 기반 조회
         if (principal instanceof UserDetails ud) {
             String email = ud.getUsername();
-            UserEntity u = userRepository.findByEmail(email)
+            User u = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException("User not found: " + email));
             return toDto(u);
         }
 
         // principal이 단순 String(email)일 경우
         if (principal instanceof String email) {
-            UserEntity u = userRepository.findByEmail(email)
+            User u = userRepository.findByEmail(email)
                     .orElseThrow(() -> new IllegalStateException("User not found: " + email));
             return toDto(u);
         }
@@ -46,8 +46,8 @@ public class UserService {
         throw new IllegalStateException("Unsupported principal type: " + principal.getClass());
     }
 
-    // UserEntity → UserMeResponse 변환
-    public UserMeResponse toDto(UserEntity u) {
+    // User → UserMeResponse 변환
+    public UserMeResponse toDto(User u) {
         return UserMeResponse.builder()
                 .userId(u.getUserId())
                 .email(u.getEmail())
