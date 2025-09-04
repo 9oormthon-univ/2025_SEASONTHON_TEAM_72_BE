@@ -1,4 +1,4 @@
-package goorm.hackathon.pizza.Entity;
+package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
 
