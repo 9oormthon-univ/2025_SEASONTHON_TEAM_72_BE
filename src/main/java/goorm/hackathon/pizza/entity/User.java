@@ -1,47 +1,49 @@
 package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDateTime;
+
+@Getter @Setter
 @Entity
-@Table(name = "users")
-public class User {
+@Table(
+        name = "users",
+        indexes = {
+                // firebase_uid 유니크 인덱스
+                @Index(name = "idx_users_firebase_uid", columnList = "firebase_uid", unique = true),
+                // email 유니크 인덱스
+                @Index(name = "idx_users_email", columnList = "email", unique = true)
+        }
+)
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private Long id;
+    private Long userId;
 
-    @Column(name = "kakao_id", unique = true, nullable = false)
-    private Long kakaoId;
-
-    @Column(nullable = false)
-    private String nickname;
-
-    @Column(unique = true, nullable = false)
+    // 이메일
+    @Column(name = "email", length = 120, nullable = false, unique = true)
     private String email;
 
-    @Column(name = "profile_image_url")
-    private String profileImage;
+    // 닉네임
+    @Column(name = "nickname", length = 50, nullable = false)
+    private String nickname;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    // Firebase UID
+    @Column(name = "firebase_uid", length = 128, nullable = false, unique = true)
+    private String firebaseUid;
 
-    // 사용자가 총괄하는 정산 목록 (User 1 : N Settlement)
-    @OneToMany(mappedBy = "manager")
-    private List<Settlement> managedSettlements = new ArrayList<>();
+    // 가입 제공자
+    @Column(name = "provider", length = 40, nullable = false)
+    private String provider = "FIREBASE";
 
+    // 권한 (총괄자, 참여자)
+    @Column(name = "role", length = 20, nullable = false)
+    private String role = "USER";
 
-    // 사용자의 계좌 목록 (User 1 : N Account)
-    @OneToMany(mappedBy = "user")
-    private List<Account> accounts = new ArrayList<>();
-
-    // 사용자의 개인 정산 목록 (User 1 : N PersonalSettlement)
-    @OneToMany(mappedBy = "participant")
-    private List<PersonalSettlement> personalSettlements = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user")
-    private List<SettlementParticipant> settlementParticipants = new ArrayList<>();
 }

@@ -7,7 +7,7 @@ import goorm.hackathon.pizza.dto.request.LoginRequest;
 import goorm.hackathon.pizza.dto.request.SignupRequest;
 import goorm.hackathon.pizza.dto.response.AuthResponse;
 import goorm.hackathon.pizza.dto.response.SignupResponse;
-import goorm.hackathon.pizza.entity.UserEntity;
+import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.jwt.JwtTokenProvider;
 import goorm.hackathon.pizza.repository.UserRepository;
 import goorm.hackathon.pizza.security.FirebaseAuthRestClient;
@@ -53,7 +53,7 @@ public class AuthService {
         }
 
         // DB 저장 (닉네임은 중복 허용)
-        UserEntity user = new UserEntity();
+        User user = new User();
         user.setEmail(req.getEmail());
         user.setNickname(req.getNickname());
         user.setFirebaseUid(uid);
@@ -72,8 +72,8 @@ public class AuthService {
         var signIn = firebaseRest.signInWithPassword(req.getEmail(), req.getPassword());
 
         // DB에 유저 없으면 새로 생성 (닉네임 = 이메일 앞부분)
-        UserEntity user = userRepository.findByEmail(req.getEmail()).orElseGet(() -> {
-            UserEntity u = new UserEntity();
+        User user = userRepository.findByEmail(req.getEmail()).orElseGet(() -> {
+            User u = new User();
             u.setEmail(req.getEmail());
             u.setNickname(defaultNickname(req.getEmail()));
             u.setFirebaseUid(signIn.getLocalId());

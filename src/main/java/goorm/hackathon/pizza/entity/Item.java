@@ -1,9 +1,20 @@
 package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "items")
 public class Item {
 
     @Id
@@ -11,20 +22,30 @@ public class Item {
     @Column(name = "item_id")
     private Long id;
 
-    // 어떤 정산에 속한 품목인지 (Item N : 1 Settlement)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String name;
 
-    @Column(name = "total_price")
-    private Integer totalPrice;
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalPrice;
 
-    @Column(name = "total_quantity")
-    private Integer totalQuantity;
+    @Column(nullable = false, precision = 10, scale = 2)
+    private BigDecimal totalQuantity;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(updatable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
+
+    @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Allocation> allocations = new ArrayList<>();
+
+    @Builder
+    public Item(Settlement settlement, String name, BigDecimal totalPrice, BigDecimal totalQuantity) {
+        this.settlement = settlement;
+        this.name = name;
+        this.totalPrice = totalPrice;
+        this.totalQuantity = totalQuantity;
+    }
 }

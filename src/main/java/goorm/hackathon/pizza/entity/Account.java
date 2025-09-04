@@ -2,7 +2,16 @@ package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
 
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "accounts")
 public class Account {
 
     @Id
@@ -10,17 +19,32 @@ public class Account {
     @Column(name = "account_id")
     private Long id;
 
-    // 계좌 소유자 (Account N : 1 User)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "bank_name", nullable = false)
+    @Column(nullable = false, length = 40)
     private String bankName;
 
-    @Column(name = "account_number_hash", nullable = false)
+    @Column(nullable = false, length = 200)
     private String accountNumberHash;
 
-    @Column(name = "account_holder_name", nullable = false)
-    private String accountHolderName;
+    @Column(nullable = false, length = 40)
+    private String accountNumberMasked;
+
+    @Column(nullable = false, length = 50)
+    private String accountHolder;
+
+    @Column(nullable = false)
+    private boolean isPrimary = false;
+
+    @Builder
+    public Account(User user, String bankName, String accountNumberHash, String accountNumberMasked, String accountHolder, boolean isPrimary) {
+        this.user = user;
+        this.bankName = bankName;
+        this.accountNumberHash = accountNumberHash;
+        this.accountNumberMasked = accountNumberMasked;
+        this.accountHolder = accountHolder;
+        this.isPrimary = isPrimary;
+    }
 }

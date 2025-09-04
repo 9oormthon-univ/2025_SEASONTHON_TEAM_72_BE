@@ -11,23 +11,22 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "receipts")
-public class Receipt {
+@Table(name = "invites")
+public class Invite {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "receipt_id")
+    @Column(name = "invite_id")
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
 
-    @Column(nullable = false)
-    private String imageUrl;
+    @Column(nullable = false, unique = true, length = 64)
+    private String code;
 
-    @Lob // TEXT 타입 매핑
-    private String ocrText;
+    private LocalDateTime expiresAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -36,11 +35,14 @@ public class Receipt {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+    private boolean isActive = true;
+
     @Builder
-    public Receipt(Settlement settlement, String imageUrl, String ocrText, User createdBy) {
+    public Invite(Settlement settlement, String code, LocalDateTime expiresAt, User createdBy, boolean isActive) {
         this.settlement = settlement;
-        this.imageUrl = imageUrl;
-        this.ocrText = ocrText;
+        this.code = code;
+        this.expiresAt = expiresAt;
         this.createdBy = createdBy;
+        this.isActive = isActive;
     }
 }

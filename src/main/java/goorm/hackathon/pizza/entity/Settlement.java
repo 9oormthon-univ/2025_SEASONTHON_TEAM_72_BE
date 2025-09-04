@@ -1,58 +1,58 @@
 package goorm.hackathon.pizza.entity;
 
+import goorm.hackathon.pizza.entity.Enum.SettlementStatus;
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-public class Settlement {
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "settlements")
+public class Settlement extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "settlement_id")
     private Long id;
 
-    // 총괄자 정보 (Settlement N : 1 User)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "manager_id", nullable = false)
-    private User manager;
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 120)
     private String title;
 
-    @Column(name = "settlement_status")
-    private String status; // 예: "진행중", "완료"
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SettlementStatus status = SettlementStatus.IN_PROGRESS;
 
-    @Column(name = "participant_count")
-    private Integer participantCount;
+    private Integer participantLimit;
+    private LocalDateTime depositDeadline;
 
-    @Column(name = "deposit_date")
-    private LocalDate depositDate;
+    @Column(precision = 12, scale = 2)
+    private BigDecimal totalAmount;
 
-    @Column(name = "total_amount")
-    private Integer totalAmount;
-
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-
-    @OneToMany(mappedBy = "settlement")
-    private List<SettlementParticipant> settlementParticipants = new ArrayList<>();
-
-    // 정산에 포함된 품목 목록 (Settlement 1 : N Item)
-    @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
-    // 개인 정산 목록 (Settlement 1 : N PersonalSettlement)
-    @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL)
-    private List<PersonalSettlement> personalSettlements = new ArrayList<>();
+    @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Participation> participations = new ArrayList<>();
 
-    // 영수증 정보 (Settlement 1 : 1 Receipt)
-    @OneToOne(mappedBy = "settlement", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private Receipt receipt;
+    @Builder
+    public Settlement(User owner, String title, SettlementStatus status, Integer participantLimit, LocalDateTime depositDeadline, BigDecimal totalAmount) {
+        this.owner = owner;
+        this.title = title;
+        this.status = status;
+        this.participantLimit = participantLimit;
+        this.depositDeadline = depositDeadline;
+        this.totalAmount = totalAmount;
+    }
 }
