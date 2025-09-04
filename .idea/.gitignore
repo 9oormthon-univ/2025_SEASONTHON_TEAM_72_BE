@@ -7,6 +7,10 @@
 /dataSources/
 /dataSources.local.xml
 
+# Gradle
+.gradle/
+build/
+
 # Java (Gradle, Maven)
 /target
 /build
@@ -15,3 +19,14 @@
 .idea/
 /.vscode/
 .DS_Store
+/.name
+/compiler.xml
+/gradle.xml
+
+# IntelliJ / Eclipse 등 IDE 설정
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
