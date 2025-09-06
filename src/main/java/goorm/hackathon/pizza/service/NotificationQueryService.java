@@ -44,6 +44,7 @@ public class NotificationQueryService {
         return new NotificationResponse(
                 n.getId(),
                 n.getType(),
+
                 message,
                 n.isRead(),
                 status,
