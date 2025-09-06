@@ -5,29 +5,13 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 public class UserItemRow {
-    private final Long userId;          // ← 추가: DB PK
+    private final Long userId;       // users.user_id
     private final String userNickname;
     private final boolean paid;
     private final String itemName;
-    private final int quantity;         // a.quantity
-    private final BigDecimal unitPrice; // 계산된 단가
+    private final int quantity;
+    private final BigDecimal unitPrice;
 
-    // (A) 단가가 이미 계산되어 전달될 때 사용하는 생성자
-    public UserItemRow(Long userId,
-                       String userNickname,
-                       boolean paid,
-                       String itemName,
-                       int quantity,
-                       BigDecimal unitPrice) {
-        this.userId = userId;
-        this.userNickname = userNickname;
-        this.paid = paid;
-        this.itemName = itemName;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice == null ? BigDecimal.ZERO : unitPrice;
-    }
-
-    // (B) totalPrice/totalQuantity 로부터 단가를 계산하는 생성자
     public UserItemRow(Long userId,
                        String userNickname,
                        boolean paid,
@@ -44,7 +28,7 @@ public class UserItemRow {
         if (totalPrice == null || totalQuantity == null || totalQuantity.compareTo(BigDecimal.ZERO) == 0) {
             this.unitPrice = BigDecimal.ZERO;
         } else {
-            this.unitPrice = totalPrice.divide(totalQuantity, 0, RoundingMode.HALF_UP); // 소수점 0자리 반올림
+            this.unitPrice = totalPrice.divide(totalQuantity, 0, RoundingMode.HALF_UP);
         }
     }
 

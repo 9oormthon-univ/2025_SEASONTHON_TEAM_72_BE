@@ -27,15 +27,13 @@ public class SettlementSummaryService {
         this.settlementRepository = settlementRepository;
     }
 
-    /**
-     * @param settlementId 정산방 ID
-     * @param uid          호출자 식별(Firebase UID) - 권한 체크 용도로 필요시 사용
-     */
     public SettlementSummaryDto getSummary(Long settlementId, String uid) {
-        // 0) 제목은 DB에서 조회 (UID를 제목으로 쓰는 버그 방지)
-        String title = settlementRepository.findById(settlementId)
-                .map(Settlement::getTitle)
-                .orElse("정산");
+        // 0) 제목과 총괄자 ID 조회
+        Settlement settlement = settlementRepository.findById(settlementId)
+                .orElseThrow(() -> new IllegalArgumentException("정산방을 찾을 수 없습니다: " + settlementId));
+
+        String title = settlement.getTitle();
+        Long ownerId = settlement.getOwner().getUserId();
 
         // 1) 사용자-아이템 단위행 조회
         List<UserItemRow> rows = allocationRepository.findUserItemRows(settlementId);
@@ -50,16 +48,13 @@ public class SettlementSummaryService {
 
         // 3) 변환
         List<SummaryUserDto> users = new ArrayList<>();
-
         for (Map.Entry<String, List<UserItemRow>> e : byUser.entrySet()) {
             String nickname = e.getKey();
             List<UserItemRow> list = e.getValue();
 
-            // 동일 유저 묶음 → 첫 행에서 userId/paid 꺼내기
             Long userId = list.stream().findFirst().map(UserItemRow::getUserId).orElse(null);
             boolean paid = list.stream().findFirst().map(UserItemRow::isPaid).orElse(false);
 
-            // 아이템 리스트
             List<SummaryItemDto> items = list.stream().map(r -> {
                 BigDecimal unit = Optional.ofNullable(r.getUnitPrice()).orElse(BigDecimal.ZERO);
                 int unitPrice = unit.setScale(0, RoundingMode.HALF_UP).intValue();
@@ -72,18 +67,20 @@ public class SettlementSummaryService {
             }).toList();
 
             SummaryUserDto u = new SummaryUserDto();
-            u.setUserId(userId);     // ← 여기! userId 세팅
+            u.setUserId(userId);
             u.setUser(nickname);
             u.setPaid(paid);
             u.setItems(items);
-
             users.add(u);
         }
 
+        // 최종 DTO 생성
         SettlementSummaryDto dto = new SettlementSummaryDto();
         dto.setTitle(title);
         dto.setSettlementId(settlementId);
-        dto.setUsers(users);
+        dto.setOwnerId(ownerId);
+        dto.setUsers(users != null ? users : new ArrayList<>());
+
         return dto;
     }
 }

@@ -2,10 +2,10 @@ package goorm.hackathon.pizza.repository;
 
 import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
 import goorm.hackathon.pizza.entity.Participation;
-import goorm.hackathon.pizza.repository.rows.OverallItemRow;
-import goorm.hackathon.pizza.repository.rows.UserItemRow;
 import goorm.hackathon.pizza.entity.Settlement;
 import goorm.hackathon.pizza.entity.User;
+import goorm.hackathon.pizza.repository.rows.OverallItemRow;
+import goorm.hackathon.pizza.repository.rows.UserItemRow;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +14,13 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
-    // 특정 유저가 특정 정산에 이미 참여했는지 확인하기 위한 메서드
+
+    //미 참여 중인지 확인 (Service에서 사용하는 메서드)
     boolean existsBySettlementAndUser(Settlement settlement, User user);
+
+    // (원하면 PK로도 사용 가능: 불필요한 엔티티 로딩 피함)
+    // boolean existsBySettlement_IdAndUser_UserId(Long settlementId, Long userId);
+
     @Query("""
         select p.role
           from Participation p
@@ -26,27 +31,23 @@ public interface ParticipationRepository extends JpaRepository<Participation, Lo
                                        @Param("uid") Long userId);
 
     @Query("""
-select new goorm.hackathon.pizza.repository.rows.UserItemRow(
-    p.user.userId,
-    p.userNickname,
-    p.isPaid,
-    i.name,
-    a.quantity,
-    i.totalPrice,
-    i.totalQuantity
-)
-from Allocation a
-  join a.participation p
-  join a.item i
-where p.settlement.id = :sid
-order by p.userNickname, i.name
-""")
+        select new goorm.hackathon.pizza.repository.rows.UserItemRow(
+            p.user.userId,
+            p.userNickname,
+            p.isPaid,
+            i.name,
+            a.quantity,
+            i.totalPrice,
+            i.totalQuantity
+        )
+        from Allocation a
+          join a.participation p
+          join a.item i
+        where p.settlement.id = :sid
+        order by p.userNickname, i.name
+    """)
     List<UserItemRow> findUserItemRows(@Param("sid") Long settlementId);
 
-
-
-
-    // "전체" 품목별 수량 합 rows (단가/라인금액은 서비스에서 계산)
     @Query("""
         select new goorm.hackathon.pizza.repository.rows.OverallItemRow(
             i.name,
@@ -63,7 +64,6 @@ order by p.userNickname, i.name
     """)
     List<OverallItemRow> findOverallItemRows(@Param("sid") Long settlementId);
 
-    // 미납 인원 수
     @Query("""
         select count(p)
           from Participation p
@@ -71,5 +71,4 @@ order by p.userNickname, i.name
            and p.isPaid = false
     """)
     long countUnpaid(@Param("sid") Long settlementId);
-
 }
