@@ -1,36 +1,83 @@
 package goorm.hackathon.pizza.service;
 
-import goorm.hackathon.pizza.dto.request.CreateSettlementRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemUpdateRequestDto;
+import goorm.hackathon.pizza.dto.request.*;
 import goorm.hackathon.pizza.dto.response.ItemInfoResponse;
 import goorm.hackathon.pizza.dto.response.ItemResponseDto;
+import goorm.hackathon.pizza.dto.response.JoinSettlementResponse;
 import goorm.hackathon.pizza.dto.response.SettlementResponse;
+import goorm.hackathon.pizza.entity.*;
 import goorm.hackathon.pizza.entity.Enum.SettlementStatus;
-import goorm.hackathon.pizza.entity.Item;
-import goorm.hackathon.pizza.entity.Receipt;
-import goorm.hackathon.pizza.entity.Settlement;
-import goorm.hackathon.pizza.entity.User;
-import goorm.hackathon.pizza.repository.ItemRepository;
-import goorm.hackathon.pizza.repository.ReceiptRepository;
-import goorm.hackathon.pizza.repository.SettlementRepository;
+import goorm.hackathon.pizza.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class SettlementServiceImpl implements SettlementService {
 
     private final SettlementRepository settlementRepository;
     private final ReceiptRepository receiptRepository;
     private final ItemRepository itemRepository;
+    private final InviteRepository inviteRepository;
+    private final ParticipationRepository participationRepository;
 
+
+    /**
+     * 1단계: 빈 껍데기뿐인 임시 정산을 생성합니다.
+     */
+    public SettlementResponse createInitialSettlement(User user) {
+        Settlement newSettlement = Settlement.builder()
+                .owner(user)
+                .title("새로운 정산")
+                .status(SettlementStatus.IN_PROGRESS)
+                .totalAmount(BigDecimal.ZERO)
+                .build();
+
+        Settlement savedSettlement = settlementRepository.save(newSettlement);
+
+        return SettlementResponse.builder()
+                .settlementId(savedSettlement.getId())
+                .title(savedSettlement.getTitle())
+                .status(savedSettlement.getStatus())
+                .build();
+    }
+
+    /**
+     * 2-1단계: 정산 제목을 수정합니다.
+     */
+    public SettlementResponse updateTitle(Long settlementId, UpdateTitleRequestDto request, User user) throws AccessDeniedException {
+        Settlement settlement = findSettlementByIdAndCheckOwner(settlementId, user);
+        settlement.setTitle(request.getTitle());
+        return SettlementResponse.from(settlement);
+    }
+    /**
+     * 2단계: 생성된 정산에 참여 인원을 설정하여 확정합니다.
+     */
+    public SettlementResponse setParticipantLimit(Long settlementId, SetLimitRequestDto request, User user) throws AccessDeniedException {
+        Settlement settlement = findSettlementByIdAndCheckOwner(settlementId, user);
+        settlement.setParticipantLimit(request.getParticipantLimit());
+        return SettlementResponse.from(settlement);
+    }
+
+
+    // 정산 조회 및 소유자 확인을 위한 private 헬퍼 메서드
+    private Settlement findSettlementByIdAndCheckOwner(Long settlementId, User user) throws AccessDeniedException {
+        Settlement settlement = settlementRepository.findById(settlementId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 정산을 찾을 수 없습니다."));
+
+        if (!settlement.getOwner().getUserId().equals(user.getUserId())) {
+            throw new AccessDeniedException("해당 정산에 대한 권한이 없습니다.");
+        }
+        return settlement;
+    }
 
     // 정산 임시 생성하기
     @Override
@@ -122,7 +169,6 @@ public class SettlementServiceImpl implements SettlementService {
                 .owner(user)
                 .title(request.getTitle())
                 .status(SettlementStatus.IN_PROGRESS)
-                .participantLimit(request.getParticipantLimit())
                 .totalAmount(totalAmount)
                 .build();
 
@@ -248,6 +294,53 @@ public class SettlementServiceImpl implements SettlementService {
                 .build();
     }
 
+    // 참여 코드 검증
+    public JoinSettlementResponse verifyAndJoinSettlement(String code, User user) {
+        // 1. 초대 코드 검증 (기존과 동일)
+        Invite invite = inviteRepository.findByCode(code)
+                .orElseThrow(() -> new EntityNotFoundException("참여 코드를 다시 한번 확인해주세요."));
 
+        if (!invite.isActive()) {
+            throw new IllegalStateException("만료되었거나 유효하지 않은 초대 코드입니다.");
+        }
 
+        Settlement settlement = invite.getSettlement();
+
+        // 2. 중복 참여 및 인원 제한 검증 (기존과 동일)
+        if (participationRepository.existsBySettlementAndUser(settlement, user)) {
+            throw new IllegalStateException("이미 참여하고 있는 정산입니다.");
+        }
+        if (settlement.getParticipantLimit() != null && settlement.getParticipations().size() >= settlement.getParticipantLimit()) {
+            throw new IllegalStateException("입장 가능한 인원이 초과되었습니다.");
+        }
+
+        // 3. Participation 엔티티 생성
+        Participation newParticipation = Participation.builder()
+                .settlement(settlement)
+                .user(user)
+                .build();
+
+        // 4. DB에 저장하여 ID와 createdAt 값이 부여된 객체를 받아옴
+        Participation savedParticipation = participationRepository.save(newParticipation);
+
+        // 5. 🔥 새로운 정보로 응답 DTO 생성 및 반환
+        return JoinSettlementResponse.builder()
+                .settlementId(settlement.getId())
+                .title(settlement.getTitle())
+                .message("정산에 성공적으로 참여했습니다.")
+                .participationId(savedParticipation.getId()) // participation ID 추가
+                .role(savedParticipation.getRole())         // 참여자의 역할 추가
+                .joinedAt(savedParticipation.getCreatedAt())  // 참여 시각 추가
+                .build();
+    }
+
+    @Override
+    public SettlementResponse getSettlementWithCode(String code) {
+        return null;
+    }
+
+    @Override
+    public SettlementResponse getSettlementWithUser() {
+        return null;
+    }
 }

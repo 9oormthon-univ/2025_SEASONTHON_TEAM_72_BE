@@ -31,6 +31,7 @@ public class Settlement extends BaseTimeEntity {
     @Column(nullable = false, length = 120)
     private String title;
 
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SettlementStatus status = SettlementStatus.IN_PROGRESS;

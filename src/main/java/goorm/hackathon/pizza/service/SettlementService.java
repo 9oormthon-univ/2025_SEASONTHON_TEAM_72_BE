@@ -1,13 +1,13 @@
 package goorm.hackathon.pizza.service;
 
-import goorm.hackathon.pizza.dto.request.CreateSettlementRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemUpdateRequestDto;
+import goorm.hackathon.pizza.dto.request.*;
 import goorm.hackathon.pizza.dto.response.ItemInfoResponse;
 import goorm.hackathon.pizza.dto.response.ItemResponseDto;
+import goorm.hackathon.pizza.dto.response.JoinSettlementResponse;
 import goorm.hackathon.pizza.dto.response.SettlementResponse;
 import goorm.hackathon.pizza.entity.User;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 public interface SettlementService {
@@ -29,4 +29,14 @@ public interface SettlementService {
 
     // 정산 품목 삭제
     void deleteSettlementItem(Long settlementId, Long itemId);
+
+    SettlementResponse createInitialSettlement(User user);
+    // 초대 코드 검증
+    JoinSettlementResponse verifyAndJoinSettlement(String code, User user);
+    // 초대 코드로 정산 조회
+    SettlementResponse getSettlementWithCode(String code);
+    // 정산 조회
+    SettlementResponse getSettlementWithUser();
+    SettlementResponse setParticipantLimit(Long settlementId, SetLimitRequestDto request, User user) throws AccessDeniedException;
+    SettlementResponse updateTitle(Long settlementId, UpdateTitleRequestDto request, User user) throws AccessDeniedException;
 }

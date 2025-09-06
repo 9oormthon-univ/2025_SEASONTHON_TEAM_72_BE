@@ -1,20 +1,17 @@
 package goorm.hackathon.pizza.controller;
 
-import goorm.hackathon.pizza.dto.request.CreateSettlementRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemRequestDto;
-import goorm.hackathon.pizza.dto.request.ItemUpdateRequestDto;
-import goorm.hackathon.pizza.dto.request.SettlementCreationRequest;
-import goorm.hackathon.pizza.dto.response.ItemInfoResponse;
-import goorm.hackathon.pizza.dto.response.ItemResponseDto;
-import goorm.hackathon.pizza.dto.response.SettlementResponse;
+import goorm.hackathon.pizza.dto.request.*;
+import goorm.hackathon.pizza.dto.response.*;
 import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.service.SettlementService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.List;
 
 @RestController
@@ -23,21 +20,40 @@ import java.util.List;
 public class SettlementController {
     private final SettlementService settlementService;
 
-    @PostMapping("/create")
-    public ResponseEntity<SettlementResponse> createSettlement(
-            @RequestBody SettlementCreationRequest req,
-            @AuthenticationPrincipal User user) {
-        SettlementResponse response = settlementService.createSettlementWithParticipants(user, req.getParticipantLimit(), req.getTitle());
+    /**
+     * 1단계: 임시 정산 생성 API
+     */
+    @PostMapping("/initiate")
+    public ResponseEntity<SettlementResponse> createInitialSettlement(@AuthenticationPrincipal User user) {
+        SettlementResponse response = settlementService.createInitialSettlement(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @PostMapping("/temp")
-    public ResponseEntity<SettlementResponse> createTempSettlement(
-            @RequestParam("receiptId") Long receiptId,
-            @AuthenticationPrincipal User user) {
-        SettlementResponse response = settlementService.createTempSettlement(receiptId, user);
+    /**
+     * 2-1단계: 정산 제목 수정 API
+     */
+    @PatchMapping("/{settlementId}/title")
+    public ResponseEntity<SettlementResponse> updateTitle(
+            @PathVariable Long settlementId,
+            @RequestBody UpdateTitleRequestDto request,
+            @AuthenticationPrincipal User user) throws AccessDeniedException {
+        SettlementResponse response = settlementService.updateTitle(settlementId, request, user);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 3단계: 정산 참여 인원 설정 API
+     */
+    @PatchMapping("/{settlementId}/limit")
+    public ResponseEntity<SettlementResponse> setParticipantLimit(
+            @PathVariable Long settlementId,
+            @RequestBody SetLimitRequestDto request,
+            @AuthenticationPrincipal User user) throws AccessDeniedException {
+        SettlementResponse response = settlementService.setParticipantLimit(settlementId, request, user);
+        return ResponseEntity.ok(response);
+    }
+
+
 
     @PostMapping("/{settlementId}/items")
     public ResponseEntity<List<ItemResponseDto>> addSettlementItems(
@@ -88,5 +104,20 @@ public class SettlementController {
 
         settlementService.deleteSettlementItem(settlementId, itemId);
         return ResponseEntity.noContent().build(); // 204 No Content 반환
+    }
+
+    @PostMapping("/join")
+    public ResponseEntity<?> joinSettlement(
+            @RequestBody JoinRequestDto request,
+            @AuthenticationPrincipal User user) {
+
+        try {
+            JoinSettlementResponse response = settlementService.verifyAndJoinSettlement(request.getCode(), user);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException | IllegalStateException e) {
+            // 검증 실패 시 에러 메시지를 담아 409 Conflict 또는 404 Not Found 상태로 응답
+            ErrorResponse errorBody = new ErrorResponse(HttpStatus.CONFLICT.value(), e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(errorBody);
+        }
     }
 }

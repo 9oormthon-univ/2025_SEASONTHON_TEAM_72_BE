@@ -34,6 +34,7 @@ public class Participation {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private ParticipantRole role = ParticipantRole.MEMBER;
 
     @Column(nullable = false)
@@ -46,5 +47,8 @@ public class Participation {
     private BigDecimal paidAmount;
 
     private LocalDateTime paidAt;
+
+    @Column(nullable = false, updatable = false) // 참여 시각은 생성시에만 기록
+    private LocalDateTime createdAt = LocalDateTime.now();
 
 }
