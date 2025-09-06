@@ -1,8 +1,7 @@
 package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,6 +9,8 @@ import java.time.LocalDateTime;
 
 @Getter @Setter
 @Entity
+@Builder
+@AllArgsConstructor
 @Table(
         name = "users",
         indexes = {
@@ -19,6 +20,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_users_email", columnList = "email", unique = true)
         }
 )
+@NoArgsConstructor
 public class User extends BaseTimeEntity {
 
     @Id

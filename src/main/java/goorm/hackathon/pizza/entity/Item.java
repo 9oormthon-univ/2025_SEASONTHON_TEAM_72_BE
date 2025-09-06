@@ -1,5 +1,7 @@
 package goorm.hackathon.pizza.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,6 +22,7 @@ public class Item {
     @Column(name = "item_id")
     private Long id;
 
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
@@ -40,12 +43,19 @@ public class Item {
     private LocalDateTime updatedAt;
 
 
+    @JsonManagedReference
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Allocation> allocations = new ArrayList<>();
 
     @Builder
     public Item(Settlement settlement, String name, BigDecimal totalPrice, BigDecimal totalQuantity) {
         this.settlement = settlement;
+        this.name = name;
+        this.totalPrice = totalPrice;
+        this.totalQuantity = totalQuantity;
+    }
+
+    public void updateInfo(String name, BigDecimal totalPrice, BigDecimal totalQuantity) {
         this.name = name;
         this.totalPrice = totalPrice;
         this.totalQuantity = totalQuantity;
