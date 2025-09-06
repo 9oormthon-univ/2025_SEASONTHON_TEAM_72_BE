@@ -9,7 +9,7 @@ public record UserMeResponse(
         String email,       // 이메일
         String nickname,    // 닉네임
         String provider,    // 가입 제공자
-        String role,        // 권한 (총괄자, 참여자)
+        String role,        // 권한 (Admin, User)
         LocalDateTime createdAt, // 생성 시각
         LocalDateTime updatedAt  // 수정 시각
 ) {}

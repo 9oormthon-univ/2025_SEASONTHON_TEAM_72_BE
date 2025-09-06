@@ -42,7 +42,7 @@ public class User extends BaseTimeEntity {
     @Column(name = "provider", length = 40, nullable = false)
     private String provider = "FIREBASE";
 
-    // 권한 (총괄자, 참여자)
+    // 권한 (Admin, User)
     @Column(name = "role", length = 20, nullable = false)
     private String role = "USER";
 

@@ -56,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     ? List.of(new SimpleGrantedAuthority(springRole))
                                     : Collections.emptyList();
 
-                    // principal 에 UserEntity 그대로 넣기 > @AuthenticationPrincipal 로 접근 가능
+                    // principal 에 User 그대로 넣기 > @AuthenticationPrincipal 로 접근 가능
                     var auth = new UsernamePasswordAuthenticationToken(user, null, authorities);
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
