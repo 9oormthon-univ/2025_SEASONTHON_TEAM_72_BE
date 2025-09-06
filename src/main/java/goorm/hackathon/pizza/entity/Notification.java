@@ -43,7 +43,12 @@ public class Notification {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @Builder
-    public Notification(User recipient, NotificationType type, String message, LinkType linkType, Long linkId, boolean isRead) {
+    public Notification(User recipient,
+                        NotificationType type,
+                        String message,
+                        LinkType linkType,
+                        Long linkId,
+                        boolean isRead) {
         this.recipient = recipient;
         this.type = type;
         this.message = message;

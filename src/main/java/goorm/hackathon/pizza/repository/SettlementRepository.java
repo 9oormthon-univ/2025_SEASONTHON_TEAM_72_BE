@@ -2,15 +2,13 @@ package goorm.hackathon.pizza.repository;
 
 import goorm.hackathon.pizza.entity.Settlement;
 import goorm.hackathon.pizza.entity.Enum.SettlementStatus;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Collection;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface SettlementRepository extends JpaRepository<Settlement, Long> {
 
@@ -34,4 +32,11 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
             Sort sort
     );
 
+    //owner 유저 ID만 단건으로 조회 (Notification role 계산용) */
+    @Query("""
+        select s.owner.userId
+          from Settlement s
+         where s.id = :sid
+    """)
+    Long findOwnerUserId(@Param("sid") Long settlementId);
 }
