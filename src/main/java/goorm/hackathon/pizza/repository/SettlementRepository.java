@@ -33,5 +33,7 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
             @Param("statuses") Collection<SettlementStatus> statuses,
             Sort sort
     );
-
+    // N+1 문제를 해결하기 위한 JPQL 쿼리
+    @Query("SELECT s FROM Settlement s JOIN FETCH s.owner")
+    List<Settlement> findAllWithOwners();
 }

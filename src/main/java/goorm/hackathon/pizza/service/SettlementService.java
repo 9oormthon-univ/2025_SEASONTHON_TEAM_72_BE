@@ -21,7 +21,7 @@ public interface SettlementService {
     SettlementResponse createSettlementWithItems(CreateSettlementRequestDto request, User user);
 
     // 정산 품목 추가
-    List<ItemResponseDto> addSettlementItems(Long settlementId, List<ItemRequestDto> itemDtos);
+    List<ItemResponseDto> addSettlementItems(Long settlementId, List<ItemRequestDto> itemDtos, User user) throws AccessDeniedException;
     // 정산 품목 목록 조회
     List<ItemInfoResponse> getSettlementItemList(Long settlementId);
     // 정산 품목 수정

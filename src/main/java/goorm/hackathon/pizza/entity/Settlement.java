@@ -37,14 +37,17 @@ public class Settlement extends BaseTimeEntity {
     private SettlementStatus status = SettlementStatus.IN_PROGRESS;
 
     private Integer participantLimit;
+
     private LocalDateTime depositDeadline;
 
     @Column(precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
+    @Builder.Default
     @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Item> items = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "settlement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participation> participations = new ArrayList<>();
 

@@ -5,13 +5,15 @@ import goorm.hackathon.pizza.dto.response.*;
 import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.service.SettlementService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException; // <-- 이 라인을 추가!
 import java.util.List;
 
 @RestController
@@ -36,7 +38,7 @@ public class SettlementController {
     public ResponseEntity<SettlementResponse> updateTitle(
             @PathVariable Long settlementId,
             @RequestBody UpdateTitleRequestDto request,
-            @AuthenticationPrincipal User user) throws AccessDeniedException {
+            @AuthenticationPrincipal User user) throws AccessDeniedException, java.nio.file.AccessDeniedException {
         SettlementResponse response = settlementService.updateTitle(settlementId, request, user);
         return ResponseEntity.ok(response);
     }
@@ -48,7 +50,7 @@ public class SettlementController {
     public ResponseEntity<SettlementResponse> setParticipantLimit(
             @PathVariable Long settlementId,
             @RequestBody SetLimitRequestDto request,
-            @AuthenticationPrincipal User user) throws AccessDeniedException {
+            @AuthenticationPrincipal User user) throws AccessDeniedException, java.nio.file.AccessDeniedException {
         SettlementResponse response = settlementService.setParticipantLimit(settlementId, request, user);
         return ResponseEntity.ok(response);
     }
@@ -58,10 +60,10 @@ public class SettlementController {
     @PostMapping("/{settlementId}/items")
     public ResponseEntity<List<ItemResponseDto>> addSettlementItems(
             @PathVariable Long settlementId,
-            @RequestBody List<ItemRequestDto> itemDtos,
-            @AuthenticationPrincipal User user) {
+            @Valid @RequestBody List<ItemRequestDto> itemDtos,
+            @AuthenticationPrincipal User user) throws AccessDeniedException, java.nio.file.AccessDeniedException {
 
-        List<ItemResponseDto> newItems = settlementService.addSettlementItems(settlementId, itemDtos);
+        List<ItemResponseDto> newItems = settlementService.addSettlementItems(settlementId, itemDtos, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(newItems);
     }
 

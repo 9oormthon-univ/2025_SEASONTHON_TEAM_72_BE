@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException; // <-- 이 라인을 추가!
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +33,7 @@ public class SettlementServiceImpl implements SettlementService {
     /**
      * 1단계: 빈 껍데기뿐인 임시 정산을 생성합니다.
      */
+    @Override
     public SettlementResponse createInitialSettlement(User user) {
         Settlement newSettlement = Settlement.builder()
                 .owner(user)
@@ -53,6 +54,7 @@ public class SettlementServiceImpl implements SettlementService {
     /**
      * 2-1단계: 정산 제목을 수정합니다.
      */
+    @Override
     public SettlementResponse updateTitle(Long settlementId, UpdateTitleRequestDto request, User user) throws AccessDeniedException {
         Settlement settlement = findSettlementByIdAndCheckOwner(settlementId, user);
         settlement.setTitle(request.getTitle());
@@ -61,6 +63,7 @@ public class SettlementServiceImpl implements SettlementService {
     /**
      * 2단계: 생성된 정산에 참여 인원을 설정하여 확정합니다.
      */
+    @Override
     public SettlementResponse setParticipantLimit(Long settlementId, SetLimitRequestDto request, User user) throws AccessDeniedException {
         Settlement settlement = findSettlementByIdAndCheckOwner(settlementId, user);
         settlement.setParticipantLimit(request.getParticipantLimit());
@@ -69,6 +72,7 @@ public class SettlementServiceImpl implements SettlementService {
 
 
     // 정산 조회 및 소유자 확인을 위한 private 헬퍼 메서드
+
     private Settlement findSettlementByIdAndCheckOwner(Long settlementId, User user) throws AccessDeniedException {
         Settlement settlement = settlementRepository.findById(settlementId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 정산을 찾을 수 없습니다."));
@@ -115,36 +119,31 @@ public class SettlementServiceImpl implements SettlementService {
     }
     // 정산 품목 추가
     @Transactional
-    public List<ItemResponseDto> addSettlementItems(Long settlementId, List<ItemRequestDto> itemDtos) {
-        // 1. 정산 엔티티 조회
-        Settlement settlement = settlementRepository.findById(settlementId)
-                .orElseThrow(() -> new EntityNotFoundException("해당 정산을 찾을 수 없습니다."));
+    public List<ItemResponseDto> addSettlementItems(Long settlementId, List<ItemRequestDto> itemDtos, User user) throws AccessDeniedException {
+        Settlement settlement = findSettlementByIdAndCheckOwner(settlementId, user);
 
-        // 2. 받은 품목 리스트를 Item 엔티티로 변환 및 저장
+        // 1. DTO 리스트를 Item 엔티티 리스트로 '변환'만 합니다.
         List<Item> newItems = itemDtos.stream()
-                .map(dto -> {
-                    Item newItem = Item.builder()
-                            .settlement(settlement) // 정산과 품목 연관관계 설정
-                            .name(dto.getName())
-                            .totalPrice(dto.getTotalPrice())
-                            .totalQuantity(dto.getTotalQuantity())
-                            .build();
-                    return itemRepository.save(newItem);
-                })
+                .map(dto -> Item.builder()
+                        .settlement(settlement)
+                        .name(dto.getName())
+                        .totalPrice(dto.getTotalPrice())
+                        .totalQuantity(dto.getTotalQuantity())
+                        .build())
                 .collect(Collectors.toList());
 
-        // 3. 정산 총액 업데이트
-        // 현재 정산의 총액에 새로 추가된 품목들의 가격을 더합니다.
-        BigDecimal totalNewAmount = newItems.stream()
-                .map(Item::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        // 2. 변환된 모든 Item 엔티티를 DB에 '일괄 저장'합니다.
+        List<Item> savedItems = itemRepository.saveAll(newItems);
 
-        BigDecimal currentTotalAmount = settlement.getTotalAmount() != null ? settlement.getTotalAmount() : BigDecimal.ZERO;
-        settlement.setTotalAmount(currentTotalAmount.add(totalNewAmount));
-        // settlementRepository.save(settlement); 는 @Transactional에 의해 자동으로 수행됩니다.
+        // ★★★ 추가된 로직 ★★★
+        // 4. 현재 Settlement 객체의 items 컬렉션에도 새로 저장된 품목들을 추가
+        settlement.getItems().addAll(savedItems);
 
-        // 4. 저장된 엔티티를 DTO로 변환하여 반환
-        return newItems.stream()
+        // 3. 정산 총액을 재계산합니다.
+        recalculateTotalAmount(settlement);
+
+        // 4. 저장된 엔티티를 DTO로 변환하여 반환합니다.
+        return savedItems.stream()
                 .map(item -> ItemResponseDto.builder()
                         .itemId(item.getId())
                         .name(item.getName())
@@ -153,7 +152,13 @@ public class SettlementServiceImpl implements SettlementService {
                         .build())
                 .collect(Collectors.toList());
     }
-
+    // 총액을 '더하는' 것보다, 현재 아이템 목록 기준으로 '재계산'하는 것이 더 안전합니다.
+    private void recalculateTotalAmount(Settlement settlement) {
+        BigDecimal totalAmount = settlement.getItems().stream()
+                .map(Item::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        settlement.setTotalAmount(totalAmount);
+    }
     /**
      * 영수증 없이 수동으로 품목을 입력받아 정산을 생성합니다.
      */
@@ -266,16 +271,8 @@ public class SettlementServiceImpl implements SettlementService {
         recalculateTotalAmount(settlement);
     }
 
-    // 정산 총액을 다시 계산하는 private 헬퍼 메서드 (수정 후)
-    private void recalculateTotalAmount(Settlement settlement) {
-        // 현재 settlement 객체가 메모리에서 가지고 있는 items 목록의 총합을 계산
-        BigDecimal newTotalAmount = settlement.getItems().stream()
-                .map(Item::getTotalPrice)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        settlement.setTotalAmount(newTotalAmount);
-    }
     // 정산 생성과 동시에 인원 설정하기
+    @Override
     public SettlementResponse createSettlementWithParticipants(User user, Integer participantLimit, String title) {
         Settlement newSettlement = Settlement.builder()
                 .owner(user)

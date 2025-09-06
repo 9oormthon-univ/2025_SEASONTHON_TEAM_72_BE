@@ -23,6 +23,7 @@ public class Participation {
     @Column(name = "participation_id")
     private Long id;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
