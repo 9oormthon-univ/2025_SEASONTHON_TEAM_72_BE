@@ -37,6 +37,8 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	// Firebase Admin SDK -
 	implementation 'com.google.firebase:firebase-admin:9.2.0'
+	implementation 'com.cloudinary:cloudinary-http44:1.38.0'
+
 
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.5'

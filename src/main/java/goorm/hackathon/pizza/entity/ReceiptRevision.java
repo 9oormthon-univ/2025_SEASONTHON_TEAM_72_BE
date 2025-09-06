@@ -23,10 +23,10 @@ public class ReceiptRevision {
     @JoinColumn(name = "receipt_id", nullable = false)
     private Receipt receipt;
 
-    @Lob // JSON 타입을 String으로 우선 매핑
+    @Lob // JSON 타입을 String
     private String beforeJson;
 
-    @Lob // JSON 타입을 String으로 우선 매핑
+    @Lob
     private String afterJson;
 
     @Column(length = 200)
