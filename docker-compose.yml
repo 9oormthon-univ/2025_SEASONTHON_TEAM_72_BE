@@ -1,0 +1,51 @@
+version: "3.9"
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: pizza-db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - dbdata:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u${DB_USERNAME}", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  app:
+    image: eclipse-temurin:21-jre
+    container_name: pizza-app
+    working_dir: /app
+    volumes:
+      - ./app.jar:/app/app.jar:ro
+      # 코드에서 기대하는 경로에 맞춰 마운트 (예: /app/config/firebase-service-account.json)
+      - ./firebase-service-account.json:/app/config/firebase-service-account.json:ro
+    env_file:
+      - .env
+    # (선택) 여기서도 명시해 두면 확실
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/pizza?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION}
+      FIREBASE_API_KEY: ${FIREBASE_API_KEY}
+      FIREBASE_SERVICE_ACCOUNT_PATH: /app/config/firebase-service-account.json
+    command: ["java", "-jar", "/app/app.jar", "--spring.profiles.active=prod"]
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+
+volumes:
+  dbdata:

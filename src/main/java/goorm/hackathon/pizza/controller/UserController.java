@@ -21,7 +21,7 @@ public class UserController {
     // JWT 인증 필터를 거쳐 SecurityContext에 저장된 UserEntity가 들어옴
     @GetMapping("/me")
     public UserMeResponse me(@AuthenticationPrincipal User user) {
-        // UserEntity → UserMeResponse DTO 변환
+        // User → UserMeResponse DTO 변환
         return userService.toDto(user);
     }
 }

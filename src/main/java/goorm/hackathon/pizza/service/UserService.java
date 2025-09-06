@@ -46,7 +46,7 @@ public class UserService {
         throw new IllegalStateException("Unsupported principal type: " + principal.getClass());
     }
 
-    // UserEntity → UserMeResponse 변환
+    // User → UserMeResponse 변환
     public UserMeResponse toDto(User u) {
         return UserMeResponse.builder()
                 .userId(u.getUserId())

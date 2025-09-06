@@ -1,0 +1,38 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]   # main에만 자동 배포
+  workflow_dispatch:        # 필요 시 수동 실행 버튼
+
+concurrency:
+  group: deploy-main
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
+
+      - name: Trust EC2 host
+        run: ssh-keyscan -H 3.38.235.2 >> ~/.ssh/known_hosts
+
+      - name: Deploy on EC2
+        run: |
+          ssh ubuntu@3.38.235.2 "
+            set -e
+            cd ~/pizza
+            git fetch --all --prune
+            git checkout main
+            git pull --rebase origin main
+            docker compose build --pull
+            docker compose up -d
+            docker compose ps
+          "

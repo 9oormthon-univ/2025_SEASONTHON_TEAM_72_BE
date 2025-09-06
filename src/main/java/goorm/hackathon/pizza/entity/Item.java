@@ -41,6 +41,7 @@ public class Item {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
+
     @Column
     private LocalDateTime updatedAt;
 

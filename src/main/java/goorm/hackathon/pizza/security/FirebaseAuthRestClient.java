@@ -37,7 +37,7 @@ public class FirebaseAuthRestClient {
         private String expiresIn;
     }
 
-    // 이메일/비번으로 Firebase REST API 호출
+    // 이메일/비번으로 Firebase api 호출
     public SignInResponse signInWithPassword(String email, String password) {
         String url = "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=" + apiKey;
 
