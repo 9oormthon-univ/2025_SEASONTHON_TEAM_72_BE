@@ -1,0 +1,21 @@
+# Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+.vscode/
+.env
+
+# Spring resources
+src/main/resources/application.properties
+src/main/resources/application-local.properties
+src/main/resources/firebase-service-account.json
+
+# Generated
+bin/

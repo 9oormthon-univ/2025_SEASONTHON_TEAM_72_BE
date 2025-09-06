@@ -2,7 +2,6 @@ package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
 
-import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -23,28 +22,24 @@ public class Account {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @Column(name = "nickname", length = 50, nullable = false)
+    private String userNickname;
+
     @Column(nullable = false, length = 40)
     private String bankName;
 
-    @Column(nullable = false, length = 200)
-    private String accountNumberHash;
-
     @Column(nullable = false, length = 40)
-    private String accountNumberMasked;
-
-    @Column(nullable = false, length = 50)
-    private String accountHolder;
+    private String accountNumber;
 
     @Column(nullable = false)
     private boolean isPrimary = false;
 
     @Builder
-    public Account(User user, String bankName, String accountNumberHash, String accountNumberMasked, String accountHolder, boolean isPrimary) {
+    public Account(User user, String bankName, String userNickname, String accountNumber, boolean isPrimary) {
         this.user = user;
         this.bankName = bankName;
-        this.accountNumberHash = accountNumberHash;
-        this.accountNumberMasked = accountNumberMasked;
-        this.accountHolder = accountHolder;
+        this.accountNumber = accountNumber;
         this.isPrimary = isPrimary;
+        this.userNickname = userNickname;
     }
 }

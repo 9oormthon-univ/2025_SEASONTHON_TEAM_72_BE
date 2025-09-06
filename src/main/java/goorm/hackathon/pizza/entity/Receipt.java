@@ -30,10 +30,10 @@ public class Receipt {
     @Column(nullable = false)
     private String imageUrl;
 
-    @Enumerated(EnumType.STRING)
+    /*@Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OCRProgress progress = OCRProgress.INCOMPLETE;
-
+*/
     @Lob // TEXT 타입 매핑
     private String ocrText;
 
@@ -46,6 +46,5 @@ public class Receipt {
 
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
-
 
 }
