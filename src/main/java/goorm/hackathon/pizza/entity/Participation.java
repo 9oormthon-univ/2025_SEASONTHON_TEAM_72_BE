@@ -1,7 +1,6 @@
 package goorm.hackathon.pizza.entity;
 
 import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
-import goorm.hackathon.pizza.entity.Enum.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,9 +35,11 @@ public class Participation {
     @Column(nullable = false)
     private ParticipantRole role = ParticipantRole.MEMBER;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PaymentStatus paymentStatus = PaymentStatus.PENDING;
+    @Column(name = "is_paid", nullable = false)
+    private boolean isPaid = false;
+
+    @Column(name = "user_nickname", length = 50, nullable = false)
+    private String userNickname;  // 닉네임 캐싱
 
     @Column(precision = 12, scale = 2)
     private BigDecimal dueAmount;
@@ -49,13 +50,32 @@ public class Participation {
     private LocalDateTime paidAt;
 
     @Builder
-    public Participation(Settlement settlement, User user, ParticipantRole role, PaymentStatus paymentStatus, BigDecimal dueAmount, BigDecimal paidAmount, LocalDateTime paidAt) {
+    public Participation(Settlement settlement,
+                         User user,
+                         ParticipantRole role,
+                         boolean isPaid,
+                         String userNickname,
+                         BigDecimal dueAmount,
+                         BigDecimal paidAmount,
+                         LocalDateTime paidAt) {
         this.settlement = settlement;
         this.user = user;
         this.role = role;
-        this.paymentStatus = paymentStatus;
+        this.isPaid = isPaid;
+        this.userNickname = userNickname;
         this.dueAmount = dueAmount;
         this.paidAmount = paidAmount;
         this.paidAt = paidAt;
+    }
+
+    // 참여 생성 시 닉네임 자동 세팅
+    public static Participation create(Settlement settlement, User user, ParticipantRole role) {
+        return Participation.builder()
+                .settlement(settlement)
+                .user(user)
+                .role(role)
+                .isPaid(false)
+                .userNickname(user.getNickname()) // 캐싱
+                .build();
     }
 }

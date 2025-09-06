@@ -26,7 +26,7 @@ public class InviteService {
     private InviteEntity createNew(Long settlementId, Long userId) {
         final LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
         for (int i = 0; i < 6; i++) {
-            String code = InviteCodeGenerator.generate(8); // 대문자+숫자
+            String code = InviteCodeGenerator.generate(6); // 대문자+숫자
             InviteEntity entity = InviteEntity.builder()
                     .settlementId(settlementId)
                     .code(code)            // @PrePersist에서 UPPERCASE 보정
