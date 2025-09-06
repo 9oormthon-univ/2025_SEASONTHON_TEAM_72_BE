@@ -1,7 +1,7 @@
 package goorm.hackathon.pizza.controller;
 
 import goorm.hackathon.pizza.dto.response.InviteResponse;
-import goorm.hackathon.pizza.entity.InviteEntity;
+import goorm.hackathon.pizza.entity.Invite;
 import goorm.hackathon.pizza.entity.User;
 import goorm.hackathon.pizza.service.InviteService;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class InviteController {
         }
 
         Long userId = user.getUserId(); //  DB user_id
-        InviteEntity inv = inviteService.createOrFetch(settlementId, userId);
+        Invite inv = inviteService.createOrFetch(settlementId, userId);
 
         String base = System.getenv().getOrDefault("FRONTEND_BASE_URL", "https://app.example.com");
         String url  = base + "/join/" + inv.getCode();

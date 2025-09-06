@@ -33,4 +33,5 @@ public interface SettlementRepository extends JpaRepository<Settlement, Long> {
             @Param("statuses") Collection<SettlementStatus> statuses,
             Sort sort
     );
+
 }

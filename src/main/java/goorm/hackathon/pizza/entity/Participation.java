@@ -1,7 +1,6 @@
 package goorm.hackathon.pizza.entity;
 
 import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
-import goorm.hackathon.pizza.entity.Enum.PaymentStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.checkerframework.checker.units.qual.A;
