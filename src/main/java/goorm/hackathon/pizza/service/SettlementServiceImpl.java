@@ -340,4 +340,9 @@ public class SettlementServiceImpl implements SettlementService {
     public SettlementResponse getSettlementWithUser() {
         return null;
     }
+    // 정산 확정
+    @Override
+    public SettlementResponse confirmSettlement(Long settlementId, User user) throws AccessDeniedException {
+        return null;
+    }
 }

@@ -1,16 +1,15 @@
 package goorm.hackathon.pizza.entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "allocations", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"item_id", "participation_id"})
@@ -45,5 +44,10 @@ public class Allocation {
         this.participation = participation;
         this.quantity = quantity;
         this.amount = amount;
+    }
+
+    public void addQuantityAndAmount(BigDecimal quantity, BigDecimal amount) {
+        this.quantity = this.quantity.add(quantity);
+        this.amount = this.amount.add(amount);
     }
 }

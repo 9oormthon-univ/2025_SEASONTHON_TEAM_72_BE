@@ -39,4 +39,7 @@ public interface SettlementService {
     SettlementResponse getSettlementWithUser();
     SettlementResponse setParticipantLimit(Long settlementId, SetLimitRequestDto request, User user) throws AccessDeniedException;
     SettlementResponse updateTitle(Long settlementId, UpdateTitleRequestDto request, User user) throws AccessDeniedException;
+
+    // 정산 확정
+    SettlementResponse confirmSettlement(Long settlementId, User user) throws AccessDeniedException;
 }

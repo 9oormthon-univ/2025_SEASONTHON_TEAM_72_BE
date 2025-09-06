@@ -1,20 +1,20 @@
 package goorm.hackathon.pizza.dto.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import goorm.hackathon.pizza.entity.Enum.AllocationStatus;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
-@Builder
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ItemInfoResponse {
+@Getter
+@Setter
+@Builder
+public class AllocationItemResponse {
     private Long itemId;
     private String name;
     private BigDecimal totalPrice;
     private BigDecimal totalQuantity;
+    private AllocationStatus status;
 }

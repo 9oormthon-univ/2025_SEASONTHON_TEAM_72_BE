@@ -1,5 +1,6 @@
 package goorm.hackathon.pizza.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
 import goorm.hackathon.pizza.entity.Enum.PaymentStatus;
 import jakarta.persistence.*;
@@ -8,10 +9,13 @@ import org.checkerframework.checker.units.qual.A;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
 @Builder
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "participation", uniqueConstraints = {
@@ -51,5 +55,9 @@ public class Participation {
 
     @Column(nullable = false, updatable = false) // 참여 시각은 생성시에만 기록
     private LocalDateTime createdAt = LocalDateTime.now();
+
+    @JsonManagedReference // ★★★ 추가: 이 관계의 부모임을 명시
+    @OneToMany(mappedBy = "participation", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Allocation> allocations = new ArrayList<>();
 
 }

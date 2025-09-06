@@ -2,6 +2,8 @@ package goorm.hackathon.pizza.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import goorm.hackathon.pizza.entity.Enum.AllocationStatus;
+import goorm.hackathon.pizza.entity.Enum.SettlementStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +44,9 @@ public class Item {
     @Column
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING) // DB에는 "IN_PROGRESS" 같은 문자열로 저장됩니다.
+    @Column(nullable = true)
+    private AllocationStatus status = AllocationStatus.IN_PROGRESS;
 
     @JsonManagedReference
     @OneToMany(mappedBy = "item", cascade = CascadeType.ALL, orphanRemoval = true)
