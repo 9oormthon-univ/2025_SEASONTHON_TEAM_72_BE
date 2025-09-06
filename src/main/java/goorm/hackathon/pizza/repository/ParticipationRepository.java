@@ -4,6 +4,8 @@ import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
 import goorm.hackathon.pizza.entity.Participation;
 import goorm.hackathon.pizza.repository.rows.OverallItemRow;
 import goorm.hackathon.pizza.repository.rows.UserItemRow;
+import goorm.hackathon.pizza.entity.Settlement;
+import goorm.hackathon.pizza.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -12,6 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ParticipationRepository extends JpaRepository<Participation, Long> {
+    // 특정 유저가 특정 정산에 이미 참여했는지 확인하기 위한 메서드
+    boolean existsBySettlementAndUser(Settlement settlement, User user);
     @Query("""
         select p.role
           from Participation p

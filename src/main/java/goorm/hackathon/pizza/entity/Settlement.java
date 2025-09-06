@@ -2,10 +2,8 @@ package goorm.hackathon.pizza.entity;
 
 import goorm.hackathon.pizza.entity.Enum.SettlementStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,6 +12,9 @@ import java.util.List;
 
 @Entity
 @Getter
+@Setter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "settlements")
 public class Settlement extends BaseTimeEntity {
@@ -29,6 +30,7 @@ public class Settlement extends BaseTimeEntity {
 
     @Column(nullable = false, length = 120)
     private String title;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

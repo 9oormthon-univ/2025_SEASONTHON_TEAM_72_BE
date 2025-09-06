@@ -1,15 +1,17 @@
 package goorm.hackathon.pizza.entity;
 
+import com.fasterxml.jackson.core.JsonToken;
+import goorm.hackathon.pizza.entity.Enum.OCRProgress;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "receipts")
 public class Receipt {
@@ -19,6 +21,8 @@ public class Receipt {
     @Column(name = "receipt_id")
     private Long id;
 
+    // 연관관계 편의 메서드 추가 (SettlementService에서 사용)
+    @Setter
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "settlement_id", nullable = false)
     private Settlement settlement;
@@ -26,8 +30,15 @@ public class Receipt {
     @Column(nullable = false)
     private String imageUrl;
 
+    /*@Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OCRProgress progress = OCRProgress.INCOMPLETE;
+*/
     @Lob // TEXT 타입 매핑
     private String ocrText;
+
+    @Column(nullable = false, precision = 12, scale = 2)
+    private BigDecimal totalAmount;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
@@ -36,11 +47,4 @@ public class Receipt {
     @Column(updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Builder
-    public Receipt(Settlement settlement, String imageUrl, String ocrText, User createdBy) {
-        this.settlement = settlement;
-        this.imageUrl = imageUrl;
-        this.ocrText = ocrText;
-        this.createdBy = createdBy;
-    }
 }

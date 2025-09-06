@@ -1,0 +1,32 @@
+# 디폴트 무시된 파일
+/shelf/
+/workspace.xml
+# 에디터 기반 HTTP 클라이언트 요청
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# Gradle
+.gradle/
+build/
+
+# Java (Gradle, Maven)
+/target
+/build
+
+# 기타 IDE 관련
+.idea/
+/.vscode/
+.DS_Store
+/.name
+/compiler.xml
+/gradle.xml
+
+# IntelliJ / Eclipse 등 IDE 설정
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/

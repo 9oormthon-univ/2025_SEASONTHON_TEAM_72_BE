@@ -19,8 +19,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_users_email", columnList = "email", unique = true)
         }
 )
-
-public class User {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,13 +46,4 @@ public class User {
     @Column(name = "role", length = 20, nullable = false)
     private String role = "USER";
 
-    // 생성 시각
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    // 수정 시각
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 }

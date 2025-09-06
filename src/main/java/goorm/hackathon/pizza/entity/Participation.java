@@ -1,17 +1,18 @@
 package goorm.hackathon.pizza.entity;
 
 import goorm.hackathon.pizza.entity.Enum.ParticipantRole;
+import goorm.hackathon.pizza.entity.Enum.PaymentStatus;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.checkerframework.checker.units.qual.A;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "participation", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"settlement_id", "user_id"})
@@ -33,6 +34,7 @@ public class Participation {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private ParticipantRole role = ParticipantRole.MEMBER;
 
     @Column(name = "is_paid", nullable = false)
@@ -49,24 +51,8 @@ public class Participation {
 
     private LocalDateTime paidAt;
 
-    @Builder
-    public Participation(Settlement settlement,
-                         User user,
-                         ParticipantRole role,
-                         boolean isPaid,
-                         String userNickname,
-                         BigDecimal dueAmount,
-                         BigDecimal paidAmount,
-                         LocalDateTime paidAt) {
-        this.settlement = settlement;
-        this.user = user;
-        this.role = role;
-        this.isPaid = isPaid;
-        this.userNickname = userNickname;
-        this.dueAmount = dueAmount;
-        this.paidAmount = paidAmount;
-        this.paidAt = paidAt;
-    }
+    @Column(nullable = false, updatable = false) // 참여 시각은 생성시에만 기록
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     // 참여 생성 시 닉네임 자동 세팅
     public static Participation create(Settlement settlement, User user, ParticipantRole role) {
