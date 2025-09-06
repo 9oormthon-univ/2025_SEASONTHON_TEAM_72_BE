@@ -1,20 +1,15 @@
 package goorm.hackathon.pizza.dto.response;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
+@Data
 @Builder
-@Getter
-@AllArgsConstructor
-public class ItemInfoResponse {
+public class ItemResponseDto {
     private Long itemId;
     private String name;
     private BigDecimal totalPrice;
     private BigDecimal totalQuantity;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
