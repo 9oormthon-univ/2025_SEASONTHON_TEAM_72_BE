@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
                 @Index(name = "idx_users_email", columnList = "email", unique = true)
         }
 )
+
 public class User {
 
     @Id
